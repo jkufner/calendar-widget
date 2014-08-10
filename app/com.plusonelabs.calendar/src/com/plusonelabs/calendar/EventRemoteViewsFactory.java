@@ -119,15 +119,18 @@ public class EventRemoteViewsFactory implements RemoteViewsFactory {
 
 	public void updateEntryList(ArrayList<Event> eventList) {
 		SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
-		if (!eventList.isEmpty()) {
-			Event firstEvent = eventList.get(0);
-			if (prefs.getBoolean(CalendarPreferences.PREF_SHOW_TODAY, false)
-					&& !firstEvent.getStartDate().toDateMidnight().isEqual(DateTime.now().toDateMidnight()))
-			{
-				DayHeader todayEmptyBucket = new DayHeader(DateTime.now());
-				todayEmptyBucket.setEmptyToday(true);
-				eventEntries.add(todayEmptyBucket);
-			}
+		Event firstEvent = eventList.isEmpty() ? null : eventList.get(0);
+
+		// Show empty today row if there is no event for today or ever
+		if (prefs.getBoolean(CalendarPreferences.PREF_SHOW_TODAY, false)
+				&& (firstEvent == null || !firstEvent.getStartDate().toDateMidnight().isEqual(DateTime.now().toDateMidnight())))
+		{
+			DayHeader todayEmptyBucket = new DayHeader(DateTime.now());
+			todayEmptyBucket.setEmptyToday(true);
+			eventEntries.add(todayEmptyBucket);
+		}
+
+		if (firstEvent != null) {
 			DayHeader curDayBucket = new DayHeader(firstEvent.getStartDate());
 			eventEntries.add(curDayBucket);
 			for (Event event : eventList) {
